@@ -966,7 +966,7 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
 			break;
 
 		}
-		return true;
+		return super.onOptionsItemSelected(item);
 	}
 
 	private OnItemClickListener onTorrentClicked = new OnItemClickListener() {
@@ -979,7 +979,8 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
 		    	// Show the details in the right of the screen (tablet interface) or separately
 		    	if (useTabletInterface) {
 		    		FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-		    		ft.replace(R.id.details, new DetailsFragment(lastUsedDaemonSettings, tor, buildLabelTexts(false)));
+		    		ft.replace(R.id.details, new DetailsFragment(TorrentsFragment.this, lastUsedDaemonSettings, tor, 
+		    				buildLabelTexts(false)));
 		    		ft.commit();
 		    	} else {
 		    		Intent i = new Intent(getActivity(), Details.class);
@@ -1377,7 +1378,7 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
 		}
 	}
 
-	private void updateTorrentList() {
+	public void updateTorrentList() {
     	if (daemon != null) {
 			queue.enqueue(RetrieveTask.create(daemon));
     	}
@@ -1419,14 +1420,18 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
 
 		if (daemon == null) {
 			// No connection possible yet: give message
-			Toast.makeText(getActivity(), R.string.no_settings_short, Toast.LENGTH_SHORT).show();
+			if (getActivity() != null) {
+				Toast.makeText(getActivity(), R.string.no_settings_short, Toast.LENGTH_SHORT).show();
+			}
 			return;
 		}
 		
 		if (!Daemon.supportsAddByFile(daemon.getType())) {
 			// The daemon type does not support .torrent file uploads/metadata sending or this is not yet implemented
-			Toast.makeText(getActivity(), R.string.no_file_uploads, Toast.LENGTH_LONG).show();
-			return;	
+			if (getActivity() != null) {
+				Toast.makeText(getActivity(), R.string.no_file_uploads, Toast.LENGTH_LONG).show();
+			}
+			return;
 		}
 		
 		queue.enqueue(AddByFileTask.create(daemon, fileUri));
@@ -1750,13 +1755,9 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
 			taskmessage.setText(taskmessageText);
 			taskmessage.setVisibility(View.VISIBLE);
 			statusBox.setVisibility(View.GONE);
-			emptyText.setVisibility(View.VISIBLE);
-			getListView().setVisibility(View.GONE);
-			/*if (getSupportFragmentManager().findFragmentById(R.id.details) != null) {
-				FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-				ft.remove(getSupportFragmentManager().findFragmentById(R.id.details));
-				ft.commit();
-			}*/
+			if (allTorrents == null) {
+				emptyText.setVisibility(View.VISIBLE);
+			}
 			return;
 		}
 		
@@ -1767,7 +1768,7 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
     	int eta = -1;
     	int seeding = 0;
     	int seedingU = 0;
-    	int other = 0;
+    	//int other = 0;
     	for (Torrent tor : allTorrents) {
     		if (tor.getStatusCode() == TorrentStatus.Downloading && (!onlyShowTransferring || tor.getRateDownload() > 0)) {
     			downloading++;
@@ -1777,8 +1778,8 @@ public class TorrentsFragment extends Fragment implements IDaemonCallback, OnTou
     		} else if (tor.getStatusCode() == TorrentStatus.Seeding && (!onlyShowTransferring || tor.getRateUpload() > 0)) {
     			seeding++;
     			seedingU += tor.getRateUpload();
-    		} else {
-    			other++;
+    		//} else {
+    		//	other++;
     		}
     	}
     	
