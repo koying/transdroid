@@ -184,6 +184,15 @@ public class RtorrentAdapter implements IDaemonAdapter {
 				makeRtorrentCall("d.multicall", new String[] { "main", "d.start=" } );
 				return new DaemonTaskSuccessResult(task);
 
+
+			case SetDownloadLocation:
+				
+				// Change the download location
+				SetDownloadLocationTask sdlTask = (SetDownloadLocationTask) task;
+				// Build request
+				makeRtorrentCall("d.set_directory", new String[] { task.getTargetTorrent().getUniqueID() }, new String[] { sdlTask.getNewLocation() });
+				return new DaemonTaskSuccessResult(task);
+
 			case SetFilePriorities:
 
 				// For each of the chosen files belonging to some torrent, set the priority

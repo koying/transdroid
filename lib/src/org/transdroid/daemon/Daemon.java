@@ -259,7 +259,7 @@ public enum Daemon {
 	}
 
 	public static boolean supportsSetDownloadLocation(Daemon type) {
-		return type == Transmission || type == Deluge;
+		return type == Transmission || type == Deluge || type == rTorrent;
 	}
 
 	public static boolean supportsSetAlternativeMode(Daemon type) {
